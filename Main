@@ -1,0 +1,125 @@
+local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local LocalPlayer = Players.LocalPlayer
+
+-- GUI
+local screenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+screenGui.Name = "AutoHunter"
+screenGui.ResetOnSpawn = false
+
+-- Nút bật săn
+local tpButton = Instance.new("TextButton")
+tpButton.Size = UDim2.new(0, 140, 0, 40)
+tpButton.Position = UDim2.new(0, 100, 0, 100)
+tpButton.Text = "BÁM ĐÍT;))"
+tpButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+tpButton.TextColor3 = Color3.new(1, 1, 1)
+tpButton.Font = Enum.Font.SourceSansBold
+tpButton.TextSize = 18
+tpButton.Parent = screenGui
+tpButton.Active = true
+tpButton.Draggable = true
+
+-- Nút đổi mục tiêu
+local skipButton = Instance.new("TextButton")
+skipButton.Size = UDim2.new(0, 140, 0, 40)
+skipButton.Position = UDim2.new(0, 100, 0, 150)
+skipButton.Text = "DELL DÍ NX BỐ CHÁN R"
+skipButton.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+skipButton.TextColor3 = Color3.new(1, 1, 1)
+skipButton.Font = Enum.Font.SourceSansBold
+skipButton.TextSize = 18
+skipButton.Parent = screenGui
+skipButton.Active = true
+skipButton.Draggable = true
+
+-- Biến
+local isHunting = false
+local currentTarget = nil
+local currentConnection = nil
+
+-- Auto spam click
+local function spamClick()
+	while isHunting and currentTarget and currentTarget:FindFirstChild("Humanoid") and currentTarget.Humanoid.Health > 0 do
+		VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+		VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+		task.wait(0.1)
+	end
+end
+
+-- Bám đít phía sau player (CỰC SÁT)
+local function followTargetLoop()
+	while isHunting and currentTarget and currentTarget:FindFirstChild("Humanoid") and currentTarget.Humanoid.Health > 0 do
+		local myChar = LocalPlayer.Character
+		if myChar and myChar:FindFirstChild("HumanoidRootPart") and currentTarget:FindFirstChild("HumanoidRootPart") then
+			local targetHRP = currentTarget.HumanoidRootPart
+			local myHRP = myChar.HumanoidRootPart
+
+			local behindPos = targetHRP.CFrame.Position - (targetHRP.CFrame.LookVector * 3)
+			myHRP.CFrame = CFrame.new(behindPos, targetHRP.Position) -- TP ra sau lưng + xoay mặt
+		end
+		task.wait(0.05) -- Bám cực sát
+	end
+end
+
+-- Đổi sang mục tiêu khác
+local function teleportToNewTarget()
+	local allPlayers = Players:GetPlayers()
+	local validTargets = {}
+
+	for _, plr in ipairs(allPlayers) do
+		local char = plr.Character
+		if plr ~= LocalPlayer and char and char:FindFirstChild("HumanoidRootPart") then
+			if not currentTarget or char ~= currentTarget then
+				table.insert(validTargets, plr)
+			end
+		end
+	end
+
+	if #validTargets == 0 then
+		warn("Không còn ai để săn.")
+		isHunting = false
+		tpButton.Text = "BÁM ĐÍT:))"
+		return
+	end
+
+	local newTarget
+	repeat
+		newTarget = validTargets[math.random(1, #validTargets)]
+	until newTarget.Character and newTarget.Character:FindFirstChild("Humanoid")
+
+	currentTarget = newTarget.Character
+
+	if currentConnection then currentConnection:Disconnect() end
+
+	currentConnection = currentTarget:FindFirstChild("Humanoid").Died:Connect(function()
+		task.wait(0.5)
+		if isHunting then
+			teleportToNewTarget()
+		end
+	end)
+
+	task.spawn(spamClick)
+	task.spawn(followTargetLoop)
+end
+
+-- Khi ấn nút bật săn
+tpButton.MouseButton1Click:Connect(function()
+	isHunting = not isHunting
+	tpButton.Text = isHunting and "ĐANG DÍ!!!" or "ĐANG DÍ!!!"
+
+	if isHunting then
+		teleportToNewTarget()
+	else
+		if currentConnection then currentConnection:Disconnect() end
+		currentTarget = nil
+	end
+end)
+
+-- Khi ấn nút đổi con mồi
+skipButton.MouseButton1Click:Connect(function()
+	if isHunting then
+		if currentConnection then currentConnection:Disconnect() end
+		teleportToNewTarget()
+	end
+end)
