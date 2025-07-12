@@ -11,7 +11,7 @@ screenGui.ResetOnSpawn = false
 local tpButton = Instance.new("TextButton")
 tpButton.Size = UDim2.new(0, 140, 0, 40)
 tpButton.Position = UDim2.new(0, 100, 0, 100)
-tpButton.Text = "BÁM ĐÍT;))"
+tpButton.Text = "BÁM ĐÍT;)))"
 tpButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 tpButton.TextColor3 = Color3.new(1, 1, 1)
 tpButton.Font = Enum.Font.SourceSansBold
@@ -24,7 +24,7 @@ tpButton.Draggable = true
 local skipButton = Instance.new("TextButton")
 skipButton.Size = UDim2.new(0, 140, 0, 40)
 skipButton.Position = UDim2.new(0, 100, 0, 150)
-skipButton.Text = "DELL DÍ NX BỐ CHÁN R"
+skipButton.Text = "Đổi Thằng Khác"
 skipButton.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
 skipButton.TextColor3 = Color3.new(1, 1, 1)
 skipButton.Font = Enum.Font.SourceSansBold
@@ -79,7 +79,7 @@ local function teleportToNewTarget()
 	if #validTargets == 0 then
 		warn("Không còn ai để săn.")
 		isHunting = false
-		tpButton.Text = "BÁM ĐÍT:))"
+		tpButton.Text = "BÁM ĐÍT;)))"
 		return
 	end
 
@@ -106,7 +106,7 @@ end
 -- Khi ấn nút bật săn
 tpButton.MouseButton1Click:Connect(function()
 	isHunting = not isHunting
-	tpButton.Text = isHunting and "ĐANG DÍ!!!" or "ĐANG DÍ!!!"
+	tpButton.Text = isHunting and "ĐANG DÍ" or "BÁM ĐÍT;)))"
 
 	if isHunting then
 		teleportToNewTarget()
